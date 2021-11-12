@@ -62,7 +62,7 @@ void* add_one(char* buf){
 char* binary_num::get_twos_complement(char* buffer){
     buffer = new char[100];
     if (bin_num[100] == 0)
-        std::memcpy(buffer,bin_num, size*sizeof(int));
+        memcpy(buffer,bin_num, size*sizeof(int));
     else{
         buffer[100] = 1;
         for (int i = 0; i < 100; i++){
@@ -107,7 +107,7 @@ binary_num subtraction(binary_num &obj1, binary_num &obj2){
     return obj_res;
 }
 
-inline char binary_num::get_sign(){
+char binary_num::get_sign(){
     if (size != 0)
         return bin_num[100];
     else throw std::invalid_argument("the number doesn't exist");
