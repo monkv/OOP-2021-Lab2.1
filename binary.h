@@ -5,21 +5,28 @@
 
 class binary_num{
 private:
-    int size;
-    char* bin_num[100];
+    int size = 0;
+    char bin_num[101];
 public:
-    binary_num();
-    binary_num(long num);
-    binary_num(std::string &str);
-    binary_num(int number); //???????
-    bool turn_into_binary(char* result, int a, int &k);
+    binary_num() = default;
+    explicit binary_num(long num);
+    explicit binary_num(std::string &str);
+    explicit binary_num(char* buf, int length);
+    binary_num(binary_num &obj);
 
-    void* add_one(char* buf, int k);
-    void* del_one(char* buf, int k);
+    char* get_twos_complement(char* buf); //+
+    char* get_2compl();
+    friend binary_num subtraction(binary_num &obj1, binary_num &obj2);
+    binary_num &increment();
+    binary_num decrement();
+    char get_sign();
 
-    char* get_sign();
-    char* get_twos_complement(); //+
-    char* substraction(char *slog1, int size1, char *slog2, int size2); //???
-    char* increment();
-    char* decrement();
+    friend std::ostream& operator<< (std::ostream &out, const binary_num &obj);
+    friend std::istream& operator>> (std::istream& in, binary_num& obj);
+
+    binary_num& operator= (const binary_num& obj);
+    binary_num& operator++();
+    const binary_num operator-- (int);
 };
+
+void* add_one(char* buf);

@@ -2,199 +2,164 @@
 #include <iostream>
 #include <string>
 
-void* reverse(char* array, int size){ //реверс массива
-    char buf[size];
-    int j = 0;
-    for (int i = size; i > 0; i--){
-        buf[j] = array[i];
-        j++;
+binary_num::binary_num(char* buf, int length) {
+    memcpy(bin_num, buf, 101);
+    int i = length;
+    while (buf[i] != 1){
+        i--;
     }
-    for (int i = 0; i > size; i++){
-        array[i] = buf[i];
-    }
+    size = i;
 }
-bool binary_num::turn_into_binary(char* result, int n, int &k){ //перевод в двоичное число
+binary_num::binary_num(long n){
     bool negative = (n < 0);
     if (negative)
         n = -n;
     int i = 0;
     do{
-        result[i] = n % 2;
+        bin_num[i] = n % 2;
         n = n / 2;
         i++;
-    } while (n > 0 & i < 124);
-    if (i >= 124)
-        return false;
-    else{
-        if (negative)
-            result[i+1] = 1;
-        else result[i+1] = 0;
-        k = i + 2;
-        reverse(result, k);
-        return true;
-    }
-}
-
-binary_num::binary_num(){
-    size = 0;
-    memset(bin_num, 0, 100);
-};
-
-binary_num::binary_num(long a){
-    int k = 0;
-    char result[124];
-    if (turn_into_binary(result, a, k)){
-        size = k;
-        memcpy(bin_num, result, size*sizeof(int));
-    }
-    else
+    } while (n > 0 & i < 100);
+    if (i >= 100)
         throw std::invalid_argument("The number is too big");
+    else{
+        for (int j = i; size < 100; size++){
+            bin_num[j] = 0;
+        }
+        if (negative){
+            bin_num[100] = 1;
+        }
+        else bin_num[100] = 0;
+        size = i + 2;
+    }
 }
 
 binary_num::binary_num(std::string &str){
-    int decimal = std::stoi(str);
-    int k = 0;
-    char result[100];
-    if (turn_into_binary(result, decimal, k)){
-        size = k;
-        memcpy(bin_num, result, size*sizeof(int));
-    }
-    else
-        throw std::invalid_argument("The number is too big");
+    long decimal = std::stoi(str);
+    memcpy(bin_num, binary_num(decimal).bin_num, 101);
+    size = binary_num(decimal).size;
 }
 
-binary_num::binary_num(int num) {
+binary_num::binary_num(binary_num &obj){
+    size = obj.size;
+    memcpy(bin_num, obj.bin_num, 101);
+};
 
-}
 
-void* binary_num::del_one(char* buf, int k){
-    int i = k;
-    char diff = 1; //то, что "занимаем" у разряда впереди
-    char del = 1; //то что вычитаем
-    while (buf[i] - del - diff < 0){
-        if (buf[i] - del - diff){
-            buf[i] = buf[i] - del - diff + 2;
-            del = 0;
-            diff = 1;
-            i--;
-        }
-        else{
-            buf[i] = buf[i] - del - diff;
-            del = 0;
-            diff = 0;
-            i--;
-        }
-    }
-}
-void *binary_num::add_one(char* buf, int k){ //переполнение!!!!!!
-    reverse(buf, k);
-    int i = 0, diff = 0; //то, что "переходит" на сл разряд
-    char add[k];
-    add[0] = 1;
-    for (int j = 1; j < k - 1; j++){
-        add[j] = 0;
-    }
-    while(buf[i] + add[i] + diff > 1){
-        buf[i] = buf[i] + add[i] + diff - 2;
+void* add_one(char* buf){
+    int diff = 0, add = 1, i = 0;
+    while (buf[i] + add + diff > 1){
+        buf[i] = buf[i] + add + diff - 2;
         diff = 1;
+        add = 0;
         i++;
-        buf[i] = buf[i] + add[i] + diff > 1;
     }
-    reverse(buf, k);
+    if (i == 0)
+        buf[i] = buf[i] + add + diff;
+    return buf;
 }
-char* binary_num::get_twos_complement(){
-    char buffer[size];
-    if (bin_num[0] == 0)
+
+char* binary_num::get_twos_complement(char* buffer){
+    buffer = new char[100];
+    if (bin_num[100] == 0)
         std::memcpy(buffer,bin_num, size*sizeof(int));
     else{
-        buffer[0] = 1;
-        for (int i = 1; i < size; i++){
+        buffer[100] = 1;
+        for (int i = 0; i < 100; i++){
             if (bin_num[i] == 0)
                 buffer[i] = 1;
             else
                 buffer[i] = 0;
         }
-        add_one(buffer, size);
+        add_one(buffer);
     }
     return buffer;
 }
-
-void* equalization(char* slog1, int size1, char* slog2, int size2){
-    if (size1 > size2){
-        char new_arr[size1];
-        new_arr[0] = slog2[0];
-        for (int i = 1; i <= size1 - size2; i++)
-            new_arr[i] = 0;
-        int j = 1;
-        for (int i = size1 - size2; i < size1; i++){
-            new_arr[i] = slog2[j];
-            j++;
-        }
-        slog2 = new_arr;
-    }
-    else if (size1 < size2){
-        char new_arr[size2];
-        new_arr[0] = slog1[0];
-        for (int i = 1; i <= size2 - size1; i++)
-            new_arr[i] = 0;
-        int j = 1;
-        for (int i = size2 - size1; i < size2; i++){
-            new_arr[i] = slog1[j];
-            j++;
-        }
-        slog1 = new_arr;
-    }
+char* binary_num::get_2compl(){
+    return get_twos_complement(bin_num);
 }
-char* binary_num::substraction(char* slog1, int size1, char* slog2, int size2){
-    equalization(slog1, size1, slog2, size2);
-    reverse(slog1, size1);
-    reverse(slog2, size2);
-    int diff;
-    char res[size1+1];
-    for (int i = 0; i <= size1; i++){
-        if (slog1[i] + slog2[i] + diff > 1){
-            res[i] = slog1[i] + slog2[i] + diff - 2;
+binary_num subtraction(binary_num &obj1, binary_num &obj2){
+    int diff = 0; //доп в десяток
+    char res[101];
+    char* summand1 = obj1.get_twos_complement(summand1);
+    char* summand2 = obj2.get_twos_complement(summand2);
+    for (int i = 0; i <= 100; i++){
+        if (summand1[i] + summand2[i] + diff > 1){
+            res[i] = summand1[i] + summand2[i] + diff - 2;
             diff = 1;
         }
         else{
-            res[i] = slog1[i] + slog2[i] + diff;
+            res[i] = summand1[i] + summand2[i] + diff;
             diff = 0;
         }
     }
-    reverse(res, size1);
-    if (diff){ //если в конце у нас есть еще что закинуть на сл порядок - переполнение
-        add_one(res, size1);
+    if (res[100] == 1){
+        for (int i = 0; i < 100; i++){
+            if (res[i] == 0)
+                res[i] = 1;
+            else
+                res[i] = 0;
+        }
+        add_one(res);
     }
-    del_one(res, size1);
-    for (int i = 1; i < size1; i++){
-        if (res[i] == 0)
-            res[i] = 1;
-        else res[i] = 0;
-    }
-    return res;
+    int length = (obj1.size > obj2.size) ? obj1.size : obj2.size;
+    binary_num obj_res (res, length);
+    return obj_res;
 }
 
-char* binary_num::increment(){ //операции увеличения числа на единицу до использования числа;
-    char* buf = get_twos_complement();
-    char addition[2] = {01};
-    char* res = substraction(buf, size, addition, 2);
-    memcpy(bin_num, res, size);
-    std::memcpy(buf,bin_num, size*sizeof(int));
-    return buf;
-}
-
-char* binary_num::decrement(){ //операции уменьшения числа после его использования;
-    char buffer[size];//то, что возвращаем
-    std::memcpy(buffer,bin_num, size*sizeof(int));
-    char* buf = get_twos_complement(); //доп код bin_num
-    char addition[2] = {11};
-    char* res = substraction(buf, size, addition, 2); //прибавляем единицу
-    memcpy(bin_num, res, size); //в бин_нам кладем увеличенное число
-    return buffer;
-}
-
-inline char* binary_num::get_sign(){
+inline char binary_num::get_sign(){
     if (size != 0)
-        return bin_num[1];
+        return bin_num[100];
     else throw std::invalid_argument("the number doesn't exist");
 }
+
+
+binary_num& binary_num::increment(){ //операции увеличения числа на единицу до использования числа;
+    int plus = 1;
+    binary_num obj (plus);
+    *this = subtraction(*this, obj);
+    return *this;
+}
+
+binary_num binary_num::decrement(){ //операции уменьшения числа после его использования;
+    binary_num copy (*this);
+    int minus = -1;
+    binary_num obj (minus);
+    *this = subtraction(*this, obj);
+    return copy;
+}
+
+std::ostream& operator<< (std::ostream &out, const binary_num &obj){
+    std::cout << obj.bin_num[100];
+    for (int i = obj.size; i > 0; i--){
+        std::cout << obj.bin_num[i];
+    }
+    return out;
+}
+std::istream& operator>> (std::istream& in, binary_num &obj) {
+    std::string input;
+    in >> input;
+    obj = binary_num(input);
+    return in;
+}
+binary_num& binary_num::operator= (const binary_num& obj){
+    memcpy(this->bin_num, obj.bin_num, 101);
+    this->size = obj.size;
+    return *this;
+}
+
+binary_num& binary_num::operator++ (){
+    int plus = 1;
+    binary_num obj (plus);
+    *this = subtraction(*this, obj);
+    return *this;
+}
+
+const binary_num binary_num::operator-- (int){ //постфиксный декремент
+    binary_num copy (*this);
+    int minus = -1;
+    binary_num obj (minus);
+    *this = subtraction(*this, obj);
+    return copy;
+}
+
